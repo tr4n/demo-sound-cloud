@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "381852429599",
+    "firebase_url": "https://soundclounddemo.firebaseio.com",
+    "project_id": "soundclounddemo",
+    "storage_bucket": "soundclounddemo.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:381852429599:android:67091e56389a6a3c",
+        "android_client_info": {
+          "package_name": "com.example.soundclounddemo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "381852429599-j0l1ukvuttifl9ig2eoe6dsutr0lgrjv.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.soundclounddemo",
+            "certificate_hash": "463581a20d2ccc629af1eb643c18015b613df264"
+          }
+        },
+        {
+          "client_id": "381852429599-dkv7spglomt1b5o0bj34mnjlgiers6si.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAj3bLf1pse4eNWCEWHjLBvg5qrtmqHClI"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "381852429599-dkv7spglomt1b5o0bj34mnjlgiers6si.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

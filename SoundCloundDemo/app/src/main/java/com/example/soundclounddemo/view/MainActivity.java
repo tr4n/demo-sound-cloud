@@ -1,6 +1,8 @@
 package com.example.soundclounddemo.view;
 
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.RequiresApi;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -11,9 +13,10 @@ import android.widget.EditText;
 import android.widget.ImageView;
 
 import com.example.soundclounddemo.R;
-import com.example.soundclounddemo.recyclerview.adapter.TrackAdapter;
+import com.example.soundclounddemo.model.page.PageModel;
 import com.example.soundclounddemo.model.track.TrackModel;
 import com.example.soundclounddemo.presenter.MainPresenter;
+import com.example.soundclounddemo.recyclerview.adapter.TrackAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,11 +36,13 @@ public class MainActivity extends AppCompatActivity implements IMainViewListener
     RecyclerView rvTracks;
     @BindView(R.id.bt_next)
     Button btNext;
+    @BindView(R.id.bt_back)
+    Button btBack;
     private MainPresenter mMainPresenter;
     private List<TrackModel> mTrackModelList;
-    private String nextHref = null;
-    private TrackAdapter mTrackAdapter ;
-    private GridLayoutManager mGridLayoutManager ;
+    private String forwardHref = null, previousHref = null;
+    private TrackAdapter mTrackAdapter;
+    private GridLayoutManager mGridLayoutManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,9 +58,10 @@ public class MainActivity extends AppCompatActivity implements IMainViewListener
     private void initialization() {
         mMainPresenter = new MainPresenter(getApplicationContext(), this);
         mTrackModelList = new ArrayList<>();
-         mTrackAdapter = new TrackAdapter(this, mTrackModelList);
-         mGridLayoutManager = new GridLayoutManager(this, 1);
-         rvTracks.setAdapter(mTrackAdapter);
+        mTrackAdapter = new TrackAdapter(this, mTrackModelList);
+        mGridLayoutManager = new GridLayoutManager(this, 1);
+        rvTracks.setLayoutManager(mGridLayoutManager);
+        rvTracks.setAdapter(mTrackAdapter);
     }
 
     private void setupUI() {
@@ -64,26 +70,35 @@ public class MainActivity extends AppCompatActivity implements IMainViewListener
     }
 
 
-    @OnClick({R.id.iv_search, R.id.bt_next})
+    @OnClick({R.id.iv_search, R.id.bt_next, R.id.bt_back})
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.bt_next:
-                if(nextHref != null)
-                    mMainPresenter.onNextPage(nextHref);
+                if (forwardHref != null)
+                    mMainPresenter.onChangePage(forwardHref);
+                break;
+            case R.id.bt_back:
+                if(previousHref != null)
+                    mMainPresenter.onChangePage(previousHref);
                 break;
             case R.id.iv_search:
-                nextHref = null;
+                previousHref = null;
+                forwardHref = null;
                 mTrackModelList.clear();
                 mMainPresenter.onSearchTrack(etSearch.getText().toString());
                 break;
         }
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
-    public void onSearchSuccess(List<TrackModel> trackModelList, String nextHref) {
-        Log.d(TAG, "onSearchSuccess: " + trackModelList);
-        this.nextHref = nextHref;
-        mTrackAdapter.updateTrackList(trackModelList);
+    public void onSearchSuccess(PageModel pageModel) {
+        Log.d(TAG, "onSearchSuccess: " + pageModel.getTrackModelList());
+        this.forwardHref = pageModel.getForwardHref();
+        this.previousHref = pageModel.getPreviousHref();
+       mTrackAdapter = new TrackAdapter(this, pageModel.getTrackModelList());
+        rvTracks.setAdapter(mTrackAdapter);
+      //  mTrackAdapter.updateTrackList(pageModel.getTrackModelList());
 
     }
 }

@@ -1,15 +1,10 @@
 package com.example.soundclounddemo.presenter;
 
 import android.content.Context;
-import android.support.v7.widget.RecyclerView;
 
-import com.example.soundclounddemo.model.Container;
+import com.example.soundclounddemo.model.page.PageModel;
 import com.example.soundclounddemo.model.player.PlayerModel;
-import com.example.soundclounddemo.model.track.TrackModel;
 import com.example.soundclounddemo.view.IMainViewListener;
-import com.google.android.exoplayer2.extractor.mp4.Track;
-
-import java.util.List;
 
 public class MainPresenter implements IMainPresenterListener {
     private Context mContext;
@@ -30,12 +25,12 @@ public class MainPresenter implements IMainPresenterListener {
 
 
     @Override
-    public void onSearchSuccess(List<TrackModel> trackModelList, String nextHref) {
-        callback.onSearchSuccess(trackModelList, nextHref);
+    public void onSearchSuccess(PageModel pageModel) {
+        callback.onSearchSuccess(pageModel);
     }
 
     @Override
-    public void onNextPage(String url){
-        mPlayerModel.onNextPage(url);
+    public void onChangePage(String url){
+        mPlayerModel.onChangePage(url);
     }
 }

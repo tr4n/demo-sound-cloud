@@ -5,6 +5,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.example.soundclounddemo.R;
+import com.example.soundclounddemo.model.page.PageModel;
 import com.example.soundclounddemo.model.track.TrackModel;
 import com.example.soundclounddemo.network.response.ISoundCloudService;
 import com.example.soundclounddemo.network.response.SearchPaginationResponse;
@@ -47,8 +48,14 @@ public class PlayerModel {
                                     trackJson.getUser().getUsername()
                             ));
                         }
-                        callback.onSearchSuccess(trackModelList, response.body().getNext_href());
+
                         Log.d(TAG, "onResponse: " + trackModelList);
+                        PageModel pageModel = new PageModel(
+                                trackModelList,
+                                response.body().getNext_href(),
+                                response.raw().request().url().toString()
+                                );
+                        callback.onSearchSuccess(pageModel);
                     }
 
                     @Override
@@ -60,7 +67,7 @@ public class PlayerModel {
 
     }
 
-    public void onNextPage(String url){
+    public void onChangePage(String url){
         RetrofitSingleton.getInstance().create(ISoundCloudService.class)
                 .getSearchPaginationNextHrefResponse(url)
                 .enqueue(new Callback<SearchPaginationResponse>() {
@@ -77,7 +84,12 @@ public class PlayerModel {
                                     trackJson.getUser().getUsername()
                             ));
                         }
-                        callback.onSearchSuccess(trackModelList, response.body().getNext_href());
+                        PageModel pageModel = new PageModel(
+                                trackModelList,
+                                response.body().getNext_href(),
+                                response.raw().request().url().toString()
+                        );
+                        callback.onSearchSuccess(pageModel);
                     }
 
                     @Override
