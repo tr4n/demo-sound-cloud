@@ -11,7 +11,8 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:background="#fff"
-        android:elevation="8dp"
+        android:elevation="4dp"
+        android:paddingVertical="8dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -28,7 +29,7 @@
 
         <TextView
             android:id="@+id/tv_friend_name"
-            android:layout_width="300dp"
+            android:layout_width="250dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:text="Display Name"
@@ -40,13 +41,22 @@
 
         <TextView
             android:id="@+id/tv_friend_email"
-            android:layout_width="300dp"
+            android:layout_width="250dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:text="email"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toEndOf="@+id/iv_back"
             app:layout_constraintTop_toBottomOf="@+id/tv_friend_name" />
+
+        <ImageView
+            android:id="@+id/iv_friend_avatar"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:srcCompat="@drawable/cast_expanded_controller_seekbar_thumb" />
     </android.support.constraint.ConstraintLayout>
 
     <android.support.constraint.ConstraintLayout
@@ -59,21 +69,69 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
+
+        <android.support.constraint.ConstraintLayout
+            android:id="@+id/cl_features"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/et_message"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:id="@+id/iv_camera"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                android:visibility="visible"
+                app:layout_constraintBottom_toBottomOf="@+id/iv_picture"
+                app:layout_constraintEnd_toStartOf="@+id/iv_picture"
+                app:layout_constraintStart_toEndOf="@+id/iv_music"
+                app:layout_constraintTop_toTopOf="@+id/iv_picture"
+                app:srcCompat="@drawable/ic_photo_camera_black_24dp"
+                tools:ignore="VectorDrawableCompat" />
+
+            <ImageView
+                android:id="@+id/iv_picture"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/iv_camera"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/ic_image_black_24dp"
+                tools:ignore="VectorDrawableCompat" />
+
+            <ImageView
+                android:id="@+id/iv_music"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
+                app:layout_constraintBottom_toBottomOf="@+id/iv_camera"
+                app:layout_constraintEnd_toStartOf="@+id/iv_camera"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="@+id/iv_camera"
+                app:srcCompat="@drawable/ic_headset_black_24dp"
+                tools:ignore="VectorDrawableCompat" />
+        </android.support.constraint.ConstraintLayout>
+
         <EditText
             android:id="@+id/et_message"
             android:layout_width="0dp"
             android:layout_height="40dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
             android:background="@drawable/conner_edit_text_background"
             android:ems="10"
+            android:hint="Type message ..."
             android:inputType="textPersonName"
             android:paddingHorizontal="16dp"
-            android:text="Type message ..."
             android:textSize="14sp"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/iv_picture"
-            app:layout_constraintStart_toEndOf="@+id/iv_avatar"
+            app:layout_constraintEnd_toStartOf="@+id/iv_send"
+            app:layout_constraintStart_toEndOf="@+id/cl_features"
             app:layout_constraintTop_toTopOf="parent" />
 
         <ImageView
@@ -81,30 +139,38 @@
             android:layout_width="48dp"
             android:layout_height="48dp"
             android:padding="8dp"
+            android:visibility="gone"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/iv_send"
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/cast_abc_scrubber_control_to_pressed_mtrl_005" />
 
         <ImageView
-            android:id="@+id/iv_picture"
+            android:id="@+id/iv_send"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="8dp"
             android:padding="8dp"
+            android:visibility="visible"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/iv_avatar"
+            app:layout_constraintHorizontal_chainStyle="spread_inside"
+            app:layout_constraintStart_toEndOf="@+id/et_message"
             app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/ic_image_black_24dp"
+            app:srcCompat="@drawable/ic_send_black_24dp"
             tools:ignore="VectorDrawableCompat" />
+
     </android.support.constraint.ConstraintLayout>
 
     <com.wang.avi.AVLoadingIndicatorView
         android:id="@+id/avi"
         style="@style/AVLoadingIndicatorView"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:background="#56FFFFFF"
+        android:elevation="1dp"
         android:visibility="visible"
+        android:foregroundGravity="center"
         app:indicatorColor="@color/colorAccent"
         app:indicatorName="BallPulseIndicator"
         app:layout_constraintBottom_toTopOf="@+id/constraintLayout3"
@@ -116,7 +182,7 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginBottom="8dp"
-        app:layout_constraintBottom_toTopOf="@+id/avi"
+        app:layout_constraintBottom_toBottomOf="@+id/avi"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/constraintLayout2" />
