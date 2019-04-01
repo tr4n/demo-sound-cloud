@@ -2,11 +2,15 @@ package com.example.soundclounddemo.utils;
 
 import android.content.ContentResolver;
 import android.content.Context;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.v4.content.CursorLoader;
 import android.support.v4.content.FileProvider;
 import android.util.Base64;
 import android.util.Log;
@@ -32,6 +36,7 @@ public class ImageUtil {
 
 
     private IChatViewListener callback;
+
     public final static String convertBitmaptoBase64(Bitmap bitmap) {
         if (bitmap == null) return null;
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -40,14 +45,13 @@ public class ImageUtil {
     }
 
 
-
     public final static String convertBase64toBitmap(String base64) {
         return null;
     }
 
     public final static long getSizefromUri(Context context, Uri uri) {
         String scheme = uri.getScheme();
-     //   System.out.println("Scheme type " + scheme);
+        //   System.out.println("Scheme type " + scheme);
         if (scheme.equals(ContentResolver.SCHEME_CONTENT)) {
             try {
                 InputStream fileInputStream = context.getContentResolver().openInputStream(uri);
@@ -60,7 +64,7 @@ public class ImageUtil {
         } else if (scheme.equals(ContentResolver.SCHEME_FILE)) {
             String path = uri.getPath();
             try {
-                return (new File(path)).length()/(1024);
+                return (new File(path)).length() / (1024);
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -68,7 +72,7 @@ public class ImageUtil {
         return 0;
     }
 
-    public static Pair<Integer, Integer> getSizeImage(final ImageView imageView){
+    public static Pair<Integer, Integer> getSizeImage(final ImageView imageView) {
         final int[] height = new int[1];
         final int[] width = new int[1];
         ViewTreeObserver viewTreeObserver = imageView.getViewTreeObserver();
@@ -83,14 +87,15 @@ public class ImageUtil {
         return new Pair<>(width[0], height[0]);
     }
 
-    public  static Bitmap getResizedBitmap(Bitmap bitmap, long size) {
+    public static Bitmap getResizedBitmap(Bitmap bitmap, long size) {
         int width = bitmap.getWidth();
         int height = bitmap.getHeight();
         Log.d(TAG, "getResizedBitmap: " + "width: " + width + ", height: " + height);
-        int scale = (int)Math.sqrt(size>>5);
-        return Bitmap.createScaledBitmap(bitmap, width/scale, height/scale, true);
+        int scale = (int) Math.sqrt(size >> 5);
+        return Bitmap.createScaledBitmap(bitmap, width / scale, height / scale, true);
 
     }
+
     public static Uri getImageUri(Context context, Bitmap bitmap) {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
@@ -98,6 +103,56 @@ public class ImageUtil {
         return Uri.parse(path);
     }
 
+    public static Bitmap rotateBitmap(Bitmap bitmap, int orientation) {
 
+        Matrix matrix = new Matrix();
+        switch (orientation) {
+            case ExifInterface.ORIENTATION_NORMAL:
+                return bitmap;
+            case ExifInterface.ORIENTATION_FLIP_HORIZONTAL:
+                matrix.setScale(-1, 1);
+                break;
+            case ExifInterface.ORIENTATION_ROTATE_180:
+                matrix.setRotate(180);
+                break;
+            case ExifInterface.ORIENTATION_FLIP_VERTICAL:
+                matrix.setRotate(180);
+                matrix.postScale(-1, 1);
+                break;
+            case ExifInterface.ORIENTATION_TRANSPOSE:
+                matrix.setRotate(90);
+                matrix.postScale(-1, 1);
+                break;
+            case ExifInterface.ORIENTATION_ROTATE_90:
+                matrix.setRotate(90);
+                break;
+            case ExifInterface.ORIENTATION_TRANSVERSE:
+                matrix.setRotate(-90);
+                matrix.postScale(-1, 1);
+                break;
+            case ExifInterface.ORIENTATION_ROTATE_270:
+                matrix.setRotate(-90);
+                break;
+            default:
+                return bitmap;
+        }
+        try {
+            Bitmap bmRotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+            bitmap.recycle();
+            return bmRotated;
+        } catch (OutOfMemoryError e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static String getPathUri(Context context, Uri uri) {
+        String[] data = {MediaStore.Images.Media.DATA};
+        CursorLoader loader = new CursorLoader(context, uri, data, null, null, null);
+        Cursor cursor = loader.loadInBackground();
+        int columnIndex = cursor.getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+        cursor.moveToFirst();
+        return cursor.getString(columnIndex);
+    }
 
 }

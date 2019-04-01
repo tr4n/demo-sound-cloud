@@ -11,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.example.soundclounddemo.R;
 import com.example.soundclounddemo.model.message.ImageMessageModel;
 import com.example.soundclounddemo.model.message.MessageModel;
@@ -20,6 +21,7 @@ import com.squareup.picasso.Picasso;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.net.URL;
 import java.util.List;
 
 import static com.android.volley.VolleyLog.TAG;
@@ -114,7 +116,8 @@ public class MessageAdapter extends RecyclerView.Adapter<MessageAdapter.MessageV
                     break;
                 case MessageUtil.IMAGE_MESSAGE:
                     ImageMessageModel imageMessageModel = (ImageMessageModel) messageModel;
-                    ivMessage.setImageURI(((ImageMessageModel) messageModel).getUri());
+                 //   ivMessage.setImageURI(((ImageMessageModel) messageModel).getUri());
+                    Glide.with(mContext).load(imageMessageModel.getUri().getPath()).into(ivMessage);
                    // Picasso.get().load(imageMessageModel.getImageModel().getUrl()).into(ivMessage);
 
                     break;

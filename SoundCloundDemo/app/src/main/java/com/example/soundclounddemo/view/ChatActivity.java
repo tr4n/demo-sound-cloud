@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.media.ExifInterface;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -186,21 +187,24 @@ public class ChatActivity extends AppCompatActivity implements IChatViewListener
             case R.id.iv_music:
                 break;
             case R.id.iv_send:
-                try {
-
-                    addTextMessage(MessageUtil.OWNER, etMessage.getText().toString().trim());
-                } catch (Exception e) {
-                    Log.d(TAG, "onViewClicked: " + e.getMessage());
-                }
-                etMessage.setText("");
-                etMessage.onWindowFocusChanged(false);
-
-                break;
+               onSendTextMessage();
+               break;
             case R.id.iv_friend_avatar:
                 break;
         }
     }
 
+    private void onSendTextMessage() {
+        try {
+            String content = etMessage.getText().toString().trim();
+            if(content.length() == 0) return;
+            addTextMessage(MessageUtil.OWNER, content);
+            etMessage.setText("");
+            etMessage.onWindowFocusChanged(false);
+        } catch (Exception e) {
+            Log.d(TAG, "onViewClicked: " + e.getMessage());
+        }
+    }
 
     private void addTextMessage(int owner, String content) {
         mMessageModelList.add(new TextMessageModel(owner, content));
@@ -294,30 +298,63 @@ public class ChatActivity extends AppCompatActivity implements IChatViewListener
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK && data != null && data.getData() != null) {
-            try {
-                Uri uri = data.getData();
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+        if (requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK
+                && data != null && data.getData() != null) {
+            Uri uri = data.getData();
+            onPickImageRequest(uri);
 
-                long size = ImageUtil.getSizefromUri(this, uri);
-                Log.d(TAG, "onActivityResult: " + size);
-             //  Bitmap resizedBitmap = size > 1024 ? ImageUtil.getResizedBitmap(bitmap, size) : bitmap;
-                Uri resizedUri = ImageUtil.getImageUri(this, bitmap);
-                Log.d(TAG, "onActivityResult new: " + ImageUtil.getSizefromUri(this, resizedUri));
-                uploadImage(resizedUri);
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
         } else if (requestCode == CAMERA_REQUEST && resultCode == RESULT_OK) {
-            try {
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), capturedImageUri);
-                Uri resizedUri = ImageUtil.getImageUri(this, bitmap);
-                uploadImage(resizedUri);
-            } catch (IOException e) {
-                e.printStackTrace();
-                Log.e(TAG, "onActivityResult: " + e.getMessage());
-            }
+            onGetCapturedImageRequest(capturedImageUri);
+        }
+    }
+
+    private void onPickImageRequest(Uri uri) {
+        try {
+
+//            ExifInterface exifInterface = new ExifInterface(ImageUtil.getPathUri(this, uri));
+//            int orientation = exifInterface.getAttributeInt(
+//                    ExifInterface.TAG_ORIENTATION,
+//                    ExifInterface.ORIENTATION_NORMAL
+//            );
+//
+//            Bitmap bitmap = ImageUtil.rotateBitmap(
+//                    MediaStore.Images.Media.getBitmap(getContentResolver(), uri),
+//                    orientation
+//            );
+            Bitmap bitmap =    MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+            long size = ImageUtil.getSizefromUri(this, uri);
+            // Log.d(TAG, "onActivityResult: " + size);
+            //  Bitmap resizedBitmap = size > 1024 ? ImageUtil.getResizedBitmap(bitmap, size) : bitmap;
+            Uri resizedUri = ImageUtil.getImageUri(this, bitmap);
+            //  Log.d(TAG, "onActivityResult new: "+ ImageUtil.getSizefromUri(this, resizedUri));
+            uploadImage(resizedUri);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.e(TAG, "onPickImageRequest: " + e.getMessage());
+        }
+    }
+
+    private void onGetCapturedImageRequest(Uri uri) {
+        try {
+//            ExifInterface exifInterface = new ExifInterface(ImageUtil.getPathUri(this, uri));
+//            int orientation = exifInterface.getAttributeInt(
+//                    ExifInterface.TAG_ORIENTATION,
+//                    ExifInterface.ORIENTATION_NORMAL
+//            );
+//
+//            Bitmap bitmap = ImageUtil.rotateBitmap(
+//                    MediaStore.Images.Media.getBitmap(getContentResolver(), uri),
+//                    orientation
+//            );
+
+            Bitmap bitmap =    MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+            Uri resizedUri = ImageUtil.getImageUri(this, bitmap);
+            Log.d(TAG, "onGetCapturedImageRequest: " + resizedUri);
+            uploadImage(resizedUri);
+        } catch (IOException e) {
+            e.printStackTrace();
+            Log.e(TAG, "onGetCapturedImageRequest: " + e.getMessage());
         }
     }
 
