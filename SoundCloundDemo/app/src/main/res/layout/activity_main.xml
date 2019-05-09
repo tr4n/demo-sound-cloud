@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".view.MainActivity">
+
+    tools:context=".view.SearchTrackActivity">
 
     <android.support.constraint.ConstraintLayout
         android:id="@+id/constraintLayout"
@@ -36,7 +37,8 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/ic_search_black_24dp"
-            tools:ignore="VectorDrawableCompat" />
+            tools:ignore="VectorDrawableCompat"
+            android:contentDescription="TODO" />
     </android.support.constraint.ConstraintLayout>
 
     <android.support.v7.widget.RecyclerView
@@ -44,6 +46,10 @@
         android:id="@+id/rv_tracks"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:paddingVertical="8dp"
+        android:background="#fff"
         app:layout_constraintBottom_toTopOf="@+id/bt_next"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

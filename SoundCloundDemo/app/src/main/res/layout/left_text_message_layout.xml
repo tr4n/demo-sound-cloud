@@ -12,26 +12,33 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginBottom="8dp"
+        android:layout_marginTop="2dp"
+        android:layout_marginBottom="@dimen/margin_message"
         android:background="@drawable/left_conner_text_message_background"
         android:elevation="1dp"
-        android:maxWidth="250dp"
-        android:padding="8dp"
+        android:lineHeight="24sp"
+        android:maxWidth="300dp"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="8dp"
         android:text="left content abcxlkjsalfkjlskdfjlaskdjfslf"
         android:textColor="#000"
+        android:textSize="16sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/tv_left_text_time" />
 
     <TextView
         android:id="@+id/tv_left_text_time"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginBottom="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
         android:text="23:00"
+        android:textAlignment="center"
         android:textSize="12sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/tv_left_content_text_message"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
 </android.support.constraint.ConstraintLayout>

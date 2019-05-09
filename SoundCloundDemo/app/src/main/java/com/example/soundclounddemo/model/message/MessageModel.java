@@ -6,20 +6,28 @@ import com.example.soundclounddemo.utils.TimeHandle;
 import java.util.Calendar;
 import java.util.Date;
 
-public class MessageModel {
+public class MessageModel implements Comparable<MessageModel> {
     private String id;
     private String time;
     private int type;
     private int owner;
     private Date createAt;
 
+
     public MessageModel(String id, int owner) {
         this.id = id;
         this.owner = owner;
-        this.owner = owner;
-        this.type = MessageUtil.IMAGE_MESSAGE;
+        this.type = MessageUtil.MUSIC_MESSAGE;
         this.createAt = Calendar.getInstance().getTime();
         this.time = TimeHandle.getInstance().getDisplayTime(createAt);
+    }
+
+    public MessageModel(String id, int type, int owner) {
+        this.id = id;
+        this.type = type;
+        this.owner = owner;
+        this.time = TimeHandle.getInstance().getDisplayTime(Long.parseLong(id));
+        this.createAt = new Date(Long.parseLong(id));
     }
 
     public MessageModel(int owner) {
@@ -60,12 +68,17 @@ public class MessageModel {
     }
 
 
-
     @Override
     public String toString() {
         return "{" +
                 "id='" + id + '\'' +
                 ", time='" + time + '\'' +
                 '}';
+    }
+
+    @Override
+    public int compareTo(MessageModel o) {
+        return (Long.parseLong(id) > Long.parseLong(o.getId())) ? 1
+                : (Long.parseLong(id) == Long.parseLong(o.getId())) ? 0 : -1;
     }
 }

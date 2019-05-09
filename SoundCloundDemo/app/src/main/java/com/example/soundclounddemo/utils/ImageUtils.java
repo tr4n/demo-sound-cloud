@@ -32,12 +32,12 @@ import java.util.Calendar;
 
 import static com.android.volley.VolleyLog.TAG;
 
-public class ImageUtil {
+public class ImageUtils {
 
 
     private IChatViewListener callback;
 
-    public final static String convertBitmaptoBase64(Bitmap bitmap) {
+    public static String convertBitmaptoBase64(Bitmap bitmap) {
         if (bitmap == null) return null;
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         bitmap.compress(Bitmap.CompressFormat.JPEG, 100, baos);
@@ -45,11 +45,11 @@ public class ImageUtil {
     }
 
 
-    public final static String convertBase64toBitmap(String base64) {
+    public static String convertBase64toBitmap(String base64) {
         return null;
     }
 
-    public final static long getSizefromUri(Context context, Uri uri) {
+    public static long getSizefromUri(Context context, Uri uri) {
         String scheme = uri.getScheme();
         //   System.out.println("Scheme type " + scheme);
         if (scheme.equals(ContentResolver.SCHEME_CONTENT)) {
@@ -155,4 +155,28 @@ public class ImageUtil {
         return cursor.getString(columnIndex);
     }
 
+    public static boolean checkAvailableUri(Context context, Uri uri){
+        ContentResolver contentResolver = context.getContentResolver();
+        String[] projection = {MediaStore.MediaColumns.DATA};
+        Cursor cursor = contentResolver.query(uri, projection, null, null, null);
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                String filePath = cursor.getString(0);
+
+                if (new File(filePath).exists()) {
+                    // do something if it exists
+                    return true;
+                } else {
+                    // File was not found
+                    return false;
+                }
+            } else {
+                // Uri was ok but no entry found.
+                return false;
+            }
+        } else {
+            // content Uri was invalid or some other error occurred
+            return false;
+        }
+    }
 }

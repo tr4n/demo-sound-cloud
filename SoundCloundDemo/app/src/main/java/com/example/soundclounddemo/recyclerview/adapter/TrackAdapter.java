@@ -1,5 +1,6 @@
 package com.example.soundclounddemo.recyclerview.adapter;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.support.annotation.NonNull;
@@ -14,10 +15,14 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.soundclounddemo.R;
+import com.example.soundclounddemo.model.event.bus.messages.TrackSticky;
 import com.example.soundclounddemo.model.track.TrackModel;
 import com.example.soundclounddemo.recyclerview.TrackDiffCallback;
-import com.example.soundclounddemo.service.TrackStreamService;
+import com.example.soundclounddemo.view.ChatActivity;
+import com.example.soundclounddemo.view.ISendTrackListener;
 import com.squareup.picasso.Picasso;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.util.List;
 
@@ -73,6 +78,7 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.TrackHolder>
 
         private static final String TAG = "TrackHolder";
 
+
         public TrackHolder(@NonNull View itemView) {
             super(itemView);
              ButterKnife.bind(this, itemView);
@@ -89,9 +95,11 @@ public class TrackAdapter extends RecyclerView.Adapter<TrackAdapter.TrackHolder>
             itemLayout.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent intent = new Intent(context, TrackStreamService.class);
+                    Intent intent = new Intent(context, ChatActivity.class);
                     intent.putExtra("track", trackModel);
-                    mContext.startService(intent);
+                    EventBus.getDefault().postSticky(new TrackSticky(trackModel));
+                    ((Activity) mContext).onBackPressed();
+
                 }
             });
 

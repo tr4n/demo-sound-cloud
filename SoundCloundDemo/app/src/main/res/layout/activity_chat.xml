@@ -25,13 +25,20 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="?attr/actionModeCloseDrawable" />
+            app:srcCompat="?attr/actionModeCloseDrawable"
+            android:contentDescription="TODO" />
 
         <TextView
             android:id="@+id/tv_friend_name"
             android:layout_width="250dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
+            android:ellipsize="marquee"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:scrollHorizontally="true"
+            android:singleLine="true"
             android:text="Display Name"
             android:textColor="#000"
             android:textStyle="bold"
@@ -44,6 +51,12 @@
             android:layout_width="250dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
+            android:ellipsize="marquee"
+            android:focusable="true"
+            android:focusableInTouchMode="true"
+            android:marqueeRepeatLimit="marquee_forever"
+            android:scrollHorizontally="true"
+            android:singleLine="true"
             android:text="email"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toEndOf="@+id/iv_back"
@@ -56,7 +69,8 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/cast_expanded_controller_seekbar_thumb" />
+            app:srcCompat="@drawable/cast_expanded_controller_seekbar_thumb"
+            android:contentDescription="TODO" />
     </android.support.constraint.ConstraintLayout>
 
     <android.support.constraint.ConstraintLayout
@@ -90,7 +104,8 @@
                 app:layout_constraintStart_toEndOf="@+id/iv_music"
                 app:layout_constraintTop_toTopOf="@+id/iv_picture"
                 app:srcCompat="@drawable/ic_photo_camera_black_24dp"
-                tools:ignore="VectorDrawableCompat" />
+                tools:ignore="VectorDrawableCompat"
+                android:contentDescription="TODO" />
 
             <ImageView
                 android:id="@+id/iv_picture"
@@ -102,7 +117,8 @@
                 app:layout_constraintStart_toEndOf="@+id/iv_camera"
                 app:layout_constraintTop_toTopOf="parent"
                 app:srcCompat="@drawable/ic_image_black_24dp"
-                tools:ignore="VectorDrawableCompat" />
+                tools:ignore="VectorDrawableCompat"
+                android:contentDescription="TODO" />
 
             <ImageView
                 android:id="@+id/iv_music"
@@ -114,21 +130,26 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="@+id/iv_camera"
                 app:srcCompat="@drawable/ic_headset_black_24dp"
-                tools:ignore="VectorDrawableCompat" />
+                tools:ignore="VectorDrawableCompat"
+                android:contentDescription="TODO" />
         </android.support.constraint.ConstraintLayout>
 
         <EditText
             android:id="@+id/et_message"
             android:layout_width="0dp"
-            android:layout_height="40dp"
+            android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
             android:background="@drawable/conner_edit_text_background"
             android:ems="10"
             android:hint="Type message ..."
-            android:inputType="textPersonName"
+            android:imeOptions="actionNone"
+            android:inputType="textMultiLine"
+            android:lineHeight="24sp"
+            android:maxLines="5"
             android:paddingHorizontal="16dp"
-            android:textSize="14sp"
+            android:paddingVertical="10dp"
+            android:textSize="16sp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/iv_send"
             app:layout_constraintStart_toEndOf="@+id/cl_features"
@@ -144,7 +165,8 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/iv_send"
             app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/cast_abc_scrubber_control_to_pressed_mtrl_005" />
+            app:srcCompat="@drawable/cast_abc_scrubber_control_to_pressed_mtrl_005"
+            android:contentDescription="TODO" />
 
         <ImageView
             android:id="@+id/iv_send"
@@ -158,7 +180,8 @@
             app:layout_constraintStart_toEndOf="@+id/et_message"
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/ic_send_black_24dp"
-            tools:ignore="VectorDrawableCompat" />
+            tools:ignore="VectorDrawableCompat"
+            android:contentDescription="TODO" />
 
     </android.support.constraint.ConstraintLayout>
 
@@ -169,8 +192,8 @@
         android:layout_height="wrap_content"
         android:background="#56FFFFFF"
         android:elevation="1dp"
-        android:visibility="visible"
         android:foregroundGravity="center"
+        android:visibility="visible"
         app:indicatorColor="@color/colorAccent"
         app:indicatorName="BallPulseIndicator"
         app:layout_constraintBottom_toTopOf="@+id/constraintLayout3"
@@ -181,6 +204,7 @@
         android:id="@+id/rv_messages"
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:layout_marginTop="8dp"
         android:layout_marginBottom="8dp"
         app:layout_constraintBottom_toBottomOf="@+id/avi"
         app:layout_constraintEnd_toEndOf="parent"

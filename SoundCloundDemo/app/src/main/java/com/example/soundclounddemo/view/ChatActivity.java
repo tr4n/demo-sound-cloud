@@ -1,13 +1,8 @@
 package com.example.soundclounddemo.view;
 
-import android.Manifest;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.media.ExifInterface;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Environment;
@@ -15,9 +10,7 @@ import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.constraint.ConstraintLayout;
-import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.FileProvider;
-import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -29,39 +22,52 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.soundclounddemo.R;
+import com.example.soundclounddemo.model.event.bus.messages.TrackSticky;
 import com.example.soundclounddemo.model.message.ImageMessageModel;
 import com.example.soundclounddemo.model.message.MessageModel;
+import com.example.soundclounddemo.model.message.MusicMessageModel;
 import com.example.soundclounddemo.model.message.TextMessageModel;
+import com.example.soundclounddemo.model.track.TrackModel;
+import com.example.soundclounddemo.realtime.database.RealtimeMessage;
 import com.example.soundclounddemo.recyclerview.adapter.MessageAdapter;
-import com.example.soundclounddemo.utils.ImageUtil;
+import com.example.soundclounddemo.utils.AuthenticationUtils;
+import com.example.soundclounddemo.utils.ImageUtils;
 import com.example.soundclounddemo.utils.MessageUtil;
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.firebase.FirebaseApp;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.wang.avi.AVLoadingIndicatorView;
 
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class ChatActivity extends AppCompatActivity implements IChatViewListener {
+public class ChatActivity extends AppCompatActivity  {
 
     private static final String TAG = "ChatActivity";
     private static final int PICK_IMAGE_REQUEST = 1;
-    private static final int REQUEST_PERMISSION = 2;
+
     private static final int CAMERA_REQUEST = 3;
     @BindView(R.id.iv_back)
     ImageView ivBack;
@@ -92,80 +98,136 @@ public class ChatActivity extends AppCompatActivity implements IChatViewListener
     @BindView(R.id.iv_friend_avatar)
     ImageView ivFriendAvatar;
 
-    private FirebaseStorage mFirebaseStorage;
     private StorageReference mStorageReference;
     private FirebaseAuth mFirebaseAuth;
+    private DatabaseReference mUserReference;
+    private DatabaseReference mFriendReference;
     private List<MessageModel> mMessageModelList = new ArrayList<>();
     private MessageAdapter mMessageAdapter = new MessageAdapter(mMessageModelList, this);
-    private GridLayoutManager mGridLayoutManager = new GridLayoutManager(this, 1);
     private Uri capturedImageUri;
+    private String mUserEmail = null;
+    private TrackModel mTrackModel = null;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
         FirebaseApp.initializeApp(this);
         ButterKnife.bind(this);
-        setupPermission();
-        initialization();
-        setupFirebaseStorage();
+        setupFirebase();
+        initMessages();
+        onMessageListener();
     }
 
 
-    private void initialization() {
-
-        mMessageModelList.add(new TextMessageModel(MessageUtil.OWNER, "Hello"));
-        mMessageModelList.add(new TextMessageModel(MessageUtil.FRIENDS, "Hi"));
-        mMessageModelList.add(new TextMessageModel(MessageUtil.OWNER, "What is your name ?"));
-        mMessageModelList.add(new TextMessageModel(MessageUtil.FRIENDS, "My name is Huy"));
-        mMessageModelList.add(new TextMessageModel(MessageUtil.OWNER, "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."));
-        mMessageModelList.add(new TextMessageModel(MessageUtil.FRIENDS, "Nice to meet you too"));
-        mMessageModelList.add(new TextMessageModel(MessageUtil.FRIENDS, "Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum."));
-
-        mMessageAdapter = new MessageAdapter(mMessageModelList, this);
-        mGridLayoutManager = new GridLayoutManager(this, 1);
-        rvMessages.setLayoutManager(mGridLayoutManager);
-        rvMessages.setAdapter(mMessageAdapter);
-        if (!mMessageModelList.isEmpty())
-            rvMessages.scrollToPosition(mMessageModelList.size() - 1);
-        avi.hide();
-
-
-    }
-
-    private void setupFirebaseStorage() {
-        mFirebaseStorage = FirebaseStorage.getInstance();
-        mStorageReference = mFirebaseStorage.getReferenceFromUrl("gs://soundclounddemo.appspot.com");
+    private void setupFirebase() {
         mFirebaseAuth = FirebaseAuth.getInstance();
-        mFirebaseAuth.signInAnonymously()
-                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            // Sign in success, update UI with the signed-in user's information
-                            Log.d(TAG, "signInAnonymously:success");
-                            FirebaseUser user = mFirebaseAuth.getCurrentUser();
-                            //  updateUI(user);
-                        } else {
-                            // If sign in fails, display a message to the user.
-                            Log.w(TAG, "signInAnonymously:failure", task.getException());
-                            Toast.makeText(ChatActivity.this, "Authentication failed.",
-                                    Toast.LENGTH_SHORT).show();
-                            //    updateUI(null);
-                        }
+        FirebaseStorage mFirebaseStorage = FirebaseStorage.getInstance();
+        mStorageReference = mFirebaseStorage.getReference();
+        FirebaseUser currentUser = mFirebaseAuth.getCurrentUser();
+        if (currentUser != null) {
+            mUserEmail = currentUser.getEmail();
+            DatabaseReference mDatabaseReference = FirebaseDatabase.getInstance().getReference("messages");
 
-                        // ...
-                    }
-                });
+            Log.d(TAG, "setupFirebase: ");
+            mUserReference = mDatabaseReference
+                    .child(AuthenticationUtils.getValidFileName(mUserEmail))
+                    .child(AuthenticationUtils.getValidFileName(AuthenticationUtils.getFriendEmail(mUserEmail)));
+            mFriendReference = mDatabaseReference
+                    .child(AuthenticationUtils.getValidFileName(AuthenticationUtils.getFriendEmail(mUserEmail)))
+                    .child(AuthenticationUtils.getValidFileName(mUserEmail));
+
+        }
 
 
     }
 
+    private void initMessages() {
+        mMessageModelList = new ArrayList<>();
+        GridLayoutManager mGridLayoutManager = new GridLayoutManager(this, 1);
+        rvMessages.setLayoutManager(mGridLayoutManager);
+        mUserReference.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                mMessageModelList = new ArrayList<>();
+                //iterate through each user, ignoring their UID
+                for (DataSnapshot messageSnapShot : dataSnapshot.getChildren()) {
+                    RealtimeMessage realtimeMessage = messageSnapShot.getValue(RealtimeMessage.class);
+                    MessageModel messageModel = realtimeMessage.type == MessageUtil.TEXT_MESSAGE ?
+                            new TextMessageModel(
+                                    realtimeMessage.id,
+                                    realtimeMessage.type,
+                                    MessageUtil.getOwner(realtimeMessage.own, mUserEmail),
+                                    realtimeMessage.content)
+                            : realtimeMessage.type == MessageUtil.IMAGE_MESSAGE ?
+                            new ImageMessageModel(
+                                    realtimeMessage.id,
+                                    realtimeMessage.type,
+                                    MessageUtil.getOwner(realtimeMessage.own, mUserEmail),
+                                    Uri.parse(realtimeMessage.uri),
+                                    realtimeMessage.url)
+                            : realtimeMessage.type == MessageUtil.MUSIC_MESSAGE ?
+                            new MusicMessageModel(
+                                    realtimeMessage.id,
+                                    realtimeMessage.type,
+                                    MessageUtil.getOwner(realtimeMessage.own, mUserEmail),
+                                    new TrackModel(
+                                            realtimeMessage.trackTitle,
+                                            realtimeMessage.artworkUrl,
+                                            realtimeMessage.streamUrl,
+                                            realtimeMessage.userName
+                                    ),
+                                    true)
+                            : null;
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        FirebaseUser currentUser = mFirebaseAuth.getCurrentUser();
+                    Log.d(TAG, "collectDatas: " + messageModel);
+                    if (messageModel != null)
+                        mMessageModelList.add(messageModel);
+
+                }
+
+
+//                TrackModel trackModel = new TrackModel(
+//                        337995359,
+//                        "Reality",
+//                        "https://i1.sndcdn.com/artworks-000238403133-5uvmof-large.jpg",
+//                        "https://api.soundcloud.com/tracks/337995359/stream",
+//                        "RAY VOLPE"
+//                );
+//                MusicMessageModel musicMessageModel = new MusicMessageModel(
+//                        System.currentTimeMillis() + "",
+//                        MessageUtil.OWNER,
+//                        trackModel,
+//                        true
+//                );
+//                mMessageModelList.add(new MusicMessageModel(
+//                        System.currentTimeMillis() + "",
+//                        MessageUtil.OWNER,
+//                        trackModel,
+//                        true
+//                ));
+//                mMessageModelList.add(new MusicMessageModel(
+//                        System.currentTimeMillis() + "",
+//                        MessageUtil.FRIENDS,
+//                        trackModel,
+//                        true
+//                ));
+                if (mTrackModel != null) addMusicMessage(mTrackModel);
+
+                Collections.sort(mMessageModelList);
+                mMessageAdapter = new MessageAdapter(mMessageModelList, ChatActivity.this);
+                rvMessages.setAdapter(mMessageAdapter);
+                rvMessages.smoothScrollToPosition(mMessageModelList.size());
+                avi.hide();
+                //   Log.d(TAG, "onDataChange: " + dataSnapshot.getValue());
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
     }
 
 
@@ -173,6 +235,19 @@ public class ChatActivity extends AppCompatActivity implements IChatViewListener
     public void onViewClicked(View view) {
         switch (view.getId()) {
             case R.id.iv_back:
+                CountDownTimer countDownTimer = new CountDownTimer(500, 250) {
+                    @Override
+                    public void onTick(long millisUntilFinished) {
+                        FirebaseAuth.getInstance().signOut();
+                    }
+
+                    @Override
+                    public void onFinish() {
+                        onBackPressed();
+                    }
+                }.start();
+
+
                 break;
             case R.id.et_message:
                 break;
@@ -185,10 +260,13 @@ public class ChatActivity extends AppCompatActivity implements IChatViewListener
                 openCamera();
                 break;
             case R.id.iv_music:
+                mTrackModel = null;
+                Intent intent = new Intent(ChatActivity.this, SearchTrackActivity.class);
+                startActivity(intent);
                 break;
             case R.id.iv_send:
-               onSendTextMessage();
-               break;
+                onSendTextMessage();
+                break;
             case R.id.iv_friend_avatar:
                 break;
         }
@@ -197,7 +275,7 @@ public class ChatActivity extends AppCompatActivity implements IChatViewListener
     private void onSendTextMessage() {
         try {
             String content = etMessage.getText().toString().trim();
-            if(content.length() == 0) return;
+            if (content.length() == 0) return;
             addTextMessage(MessageUtil.OWNER, content);
             etMessage.setText("");
             etMessage.onWindowFocusChanged(false);
@@ -207,12 +285,14 @@ public class ChatActivity extends AppCompatActivity implements IChatViewListener
     }
 
     private void addTextMessage(int owner, String content) {
-        mMessageModelList.add(new TextMessageModel(owner, content));
+        MessageModel messageModel = new TextMessageModel(owner, content);
+        saveMessageFirebase(messageModel);
+        mMessageModelList.add(messageModel);
         mMessageAdapter.notifyItemInserted(mMessageModelList.size() - 1);
         rvMessages.scrollToPosition(mMessageModelList.size() - 1);
     }
 
-    private void uploadImage(final Uri offlineUri) {
+    private void addImageMessage(final Uri offlineUri) {
         avi.show();
         final String id = "" + System.currentTimeMillis();
         final StorageReference imagesReference = mStorageReference.child("images/" + id + ".jpg");
@@ -233,6 +313,7 @@ public class ChatActivity extends AppCompatActivity implements IChatViewListener
                                         uri.toString()
                                 );
                                 imageMessageModel.setUri(offlineUri);
+                                saveMessageFirebase(imageMessageModel);
                                 mMessageModelList.add(imageMessageModel);
                                 mMessageAdapter.notifyItemInserted(mMessageModelList.size() - 1);
                                 rvMessages.scrollToPosition(mMessageModelList.size() - 1);
@@ -258,6 +339,151 @@ public class ChatActivity extends AppCompatActivity implements IChatViewListener
                         Toast.makeText(ChatActivity.this, e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
+    }
+
+
+    private void addMusicMessage(TrackModel trackModel) {
+        MessageModel messageModel = new MusicMessageModel(MessageUtil.OWNER, trackModel, true);
+        saveMessageFirebase(messageModel);
+
+        mMessageModelList.add(messageModel);
+        mMessageAdapter.notifyItemInserted(mMessageModelList.size() - 1);
+        rvMessages.scrollToPosition(mMessageModelList.size());
+        Log.d(TAG, "addMusicMessage: " + mMessageModelList);
+        Toast.makeText(ChatActivity.this, "new message", Toast.LENGTH_SHORT).show();
+    }
+
+    private void saveMessageFirebase(MessageModel messageModel) {
+        if (messageModel == null) return;
+        switch (messageModel.getType()) {
+            case MessageUtil.TEXT_MESSAGE:
+                mUserReference.child(messageModel.getId())
+                        .setValue(new RealtimeMessage(
+                                messageModel.getId(),
+                                messageModel.getType(),
+                                mUserEmail,
+                                ((TextMessageModel) messageModel).getContent()
+                        ));
+                mFriendReference.child(messageModel.getId())
+                        .setValue(new RealtimeMessage(
+                                messageModel.getId(),
+                                messageModel.getType(),
+                                mUserEmail,
+                                ((TextMessageModel) messageModel).getContent()
+                        ));
+                break;
+            case MessageUtil.IMAGE_MESSAGE:
+                mUserReference.child(messageModel.getId())
+                        .setValue(new RealtimeMessage(
+                                messageModel.getId(),
+                                messageModel.getType(),
+                                mUserEmail,
+                                ((ImageMessageModel) messageModel).getUrl(),
+                                ((ImageMessageModel) messageModel).getUri().toString()
+                        ));
+                mFriendReference.child(messageModel.getId())
+                        .setValue(new RealtimeMessage(
+                                messageModel.getId(),
+                                messageModel.getType(),
+                                mUserEmail,
+                                ((ImageMessageModel) messageModel).getUrl(),
+                                ((ImageMessageModel) messageModel).getUri().toString()
+                        ));
+                break;
+            case MessageUtil.MUSIC_MESSAGE:
+                mUserReference.child(messageModel.getId())
+                        .setValue(new RealtimeMessage(
+                                messageModel.getId(),
+                                messageModel.getType(),
+                                mUserEmail,
+                                ((MusicMessageModel) messageModel).getTrackModel().getTitle(),
+                                ((MusicMessageModel) messageModel).getTrackModel().getUserName(),
+                                ((MusicMessageModel) messageModel).getTrackModel().getArtworkUrl(),
+                                ((MusicMessageModel) messageModel).getTrackModel().getStreamUrl()
+                        ));
+                mFriendReference.child(messageModel.getId())
+                        .setValue(new RealtimeMessage(
+                                messageModel.getId(),
+                                messageModel.getType(),
+                                mUserEmail,
+                                ((MusicMessageModel) messageModel).getTrackModel().getTitle(),
+                                ((MusicMessageModel) messageModel).getTrackModel().getUserName(),
+                                ((MusicMessageModel) messageModel).getTrackModel().getArtworkUrl(),
+                                ((MusicMessageModel) messageModel).getTrackModel().getStreamUrl()
+                        ));
+
+                break;
+        }
+    }
+
+
+    private void onMessageListener() {
+        mUserReference.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+                RealtimeMessage realtimeMessage = dataSnapshot.getValue(RealtimeMessage.class);
+                if (MessageUtil.getOwner(realtimeMessage.own, mUserEmail) == MessageUtil.OWNER)
+                    return;
+                MessageModel messageModel = realtimeMessage.type == MessageUtil.TEXT_MESSAGE ?
+                        new TextMessageModel(
+                                realtimeMessage.id,
+                                realtimeMessage.type,
+                                MessageUtil.getOwner(realtimeMessage.own, mUserEmail),
+                                realtimeMessage.content)
+                        : realtimeMessage.type == MessageUtil.IMAGE_MESSAGE ?
+                        new ImageMessageModel(
+                                realtimeMessage.id,
+                                realtimeMessage.type,
+                                MessageUtil.getOwner(realtimeMessage.own, mUserEmail),
+                                Uri.parse(realtimeMessage.uri),
+                                realtimeMessage.url)
+                        : realtimeMessage.type == MessageUtil.MUSIC_MESSAGE ?
+                        new MusicMessageModel(
+                                realtimeMessage.id,
+                                realtimeMessage.type,
+                                MessageUtil.getOwner(realtimeMessage.own, mUserEmail),
+                                new TrackModel(
+                                        realtimeMessage.trackTitle,
+                                        realtimeMessage.artworkUrl,
+                                        realtimeMessage.streamUrl,
+                                        realtimeMessage.userName
+                                ),
+                                true)
+                        : null;
+
+                // Log.d(TAG, "onChildAdded: " + messageModel);
+                //    int oldPosition = mMessageModelList.size();
+                if (messageModel != null) {
+                    mMessageModelList.add(messageModel);
+                    mMessageAdapter.notifyItemInserted(mMessageModelList.size() - 1);
+                   // rvMessages.setAdapter(mMessageAdapter);
+                    rvMessages.smoothScrollToPosition(mMessageModelList.size());
+                }
+
+
+            }
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot dataSnapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+
     }
 
 
@@ -311,23 +537,23 @@ public class ChatActivity extends AppCompatActivity implements IChatViewListener
     private void onPickImageRequest(Uri uri) {
         try {
 
-//            ExifInterface exifInterface = new ExifInterface(ImageUtil.getPathUri(this, uri));
+//            ExifInterface exifInterface = new ExifInterface(ImageUtils.getPathUri(this, uri));
 //            int orientation = exifInterface.getAttributeInt(
 //                    ExifInterface.TAG_ORIENTATION,
 //                    ExifInterface.ORIENTATION_NORMAL
 //            );
 //
-//            Bitmap bitmap = ImageUtil.rotateBitmap(
+//            Bitmap bitmap = ImageUtils.rotateBitmap(
 //                    MediaStore.Images.Media.getBitmap(getContentResolver(), uri),
 //                    orientation
 //            );
-            Bitmap bitmap =    MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
-            long size = ImageUtil.getSizefromUri(this, uri);
+            Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+            long size = ImageUtils.getSizefromUri(this, uri);
             // Log.d(TAG, "onActivityResult: " + size);
-            //  Bitmap resizedBitmap = size > 1024 ? ImageUtil.getResizedBitmap(bitmap, size) : bitmap;
-            Uri resizedUri = ImageUtil.getImageUri(this, bitmap);
-            //  Log.d(TAG, "onActivityResult new: "+ ImageUtil.getSizefromUri(this, resizedUri));
-            uploadImage(resizedUri);
+            //  Bitmap resizedBitmap = size > 1024 ? ImageUtils.getResizedBitmap(bitmap, size) : bitmap;
+            Uri resizedUri = ImageUtils.getImageUri(this, bitmap);
+            //  Log.d(TAG, "onActivityResult new: "+ ImageUtils.getSizefromUri(this, resizedUri));
+            addImageMessage(resizedUri);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -337,73 +563,59 @@ public class ChatActivity extends AppCompatActivity implements IChatViewListener
 
     private void onGetCapturedImageRequest(Uri uri) {
         try {
-//            ExifInterface exifInterface = new ExifInterface(ImageUtil.getPathUri(this, uri));
+//            ExifInterface exifInterface = new ExifInterface(ImageUtils.getPathUri(this, uri));
 //            int orientation = exifInterface.getAttributeInt(
 //                    ExifInterface.TAG_ORIENTATION,
 //                    ExifInterface.ORIENTATION_NORMAL
 //            );
 //
-//            Bitmap bitmap = ImageUtil.rotateBitmap(
+//            Bitmap bitmap = ImageUtils.rotateBitmap(
 //                    MediaStore.Images.Media.getBitmap(getContentResolver(), uri),
 //                    orientation
 //            );
 
-            Bitmap bitmap =    MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
-            Uri resizedUri = ImageUtil.getImageUri(this, bitmap);
+            Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), uri);
+            Uri resizedUri = ImageUtils.getImageUri(this, bitmap);
             Log.d(TAG, "onGetCapturedImageRequest: " + resizedUri);
-            uploadImage(resizedUri);
+            addImageMessage(resizedUri);
         } catch (IOException e) {
             e.printStackTrace();
             Log.e(TAG, "onGetCapturedImageRequest: " + e.getMessage());
         }
     }
 
-    private void setupPermission() {
-        if (Build.VERSION.SDK_INT >= 23) {
-            if (checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                    == PackageManager.PERMISSION_DENIED) {
-                ActivityCompat.requestPermissions(
-                        this,
-                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                        REQUEST_PERMISSION
-                );
-            }
-        }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+        FirebaseUser currentUser = mFirebaseAuth.getCurrentUser();
+
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == REQUEST_PERMISSION) {
-            if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setTitle("Warning!")
-                        .setMessage("Without permission you can not use this app. " +
-                                "Do you want to grant permission?")
-                        .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                ActivityCompat.requestPermissions(
-                                        ChatActivity.this,
-                                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
-                                        REQUEST_PERMISSION
-                                );
-                            }
-                        })
-                        .setNegativeButton("No", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
-                                ChatActivity.this.finish();
-                            }
-                        })
-                        .show();
-            }
-        }
+    public void onStop() {
+        EventBus.getDefault().unregister(this);
+        mTrackModel = null;
+        super.onStop();
     }
+
+    @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
+    public void onMessageEvent(TrackSticky trackSticky) {
+        mTrackModel = trackSticky.trackModel;
+        if(mTrackModel != null) {
+            addMusicMessage(mTrackModel);
+            EventBus.getDefault().removeAllStickyEvents();
+            mTrackModel = null;
+        }
+        Log.d(TAG, "onMessageEvent: " + trackSticky);
+
+    };
 
     @Override
-    public Uri onOpenCamera() {
-        return null;
+    protected void onRestart() {
+        super.onRestart();
+
+
     }
-
-
 }

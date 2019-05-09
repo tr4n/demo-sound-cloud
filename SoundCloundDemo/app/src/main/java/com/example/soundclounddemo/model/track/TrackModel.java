@@ -22,6 +22,13 @@ public class TrackModel implements Parcelable {
         this.userName = userName;
     }
 
+    public TrackModel(String title, String artworkUrl, String streamUrl, String userName) {
+        this.title = title;
+        this.artworkUrl = artworkUrl;
+        this.streamUrl = streamUrl;
+        this.userName = userName;
+    }
+
     protected TrackModel(Parcel in) {
         id = in.readLong();
         title = in.readString();

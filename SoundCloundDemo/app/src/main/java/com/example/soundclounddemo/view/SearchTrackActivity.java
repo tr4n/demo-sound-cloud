@@ -13,10 +13,15 @@ import android.widget.EditText;
 import android.widget.ImageView;
 
 import com.example.soundclounddemo.R;
+import com.example.soundclounddemo.model.event.bus.messages.TrackSticky;
 import com.example.soundclounddemo.model.page.PageModel;
 import com.example.soundclounddemo.model.track.TrackModel;
 import com.example.soundclounddemo.presenter.MainPresenter;
 import com.example.soundclounddemo.recyclerview.adapter.TrackAdapter;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,8 +30,8 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 
-public class MainActivity extends AppCompatActivity implements IMainViewListener {
-    private static final String TAG = "MainActivity";
+public class SearchTrackActivity extends AppCompatActivity implements IMainViewListener {
+    private static final String TAG = "SearchTrackActivity";
 
     @BindView(R.id.et_search)
     EditText etSearch;
@@ -42,7 +47,7 @@ public class MainActivity extends AppCompatActivity implements IMainViewListener
     private List<TrackModel> mTrackModelList;
     private String forwardHref = null, previousHref = null;
     private TrackAdapter mTrackAdapter;
-    private GridLayoutManager mGridLayoutManager;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,7 +64,7 @@ public class MainActivity extends AppCompatActivity implements IMainViewListener
         mMainPresenter = new MainPresenter(getApplicationContext(), this);
         mTrackModelList = new ArrayList<>();
         mTrackAdapter = new TrackAdapter(this, mTrackModelList);
-        mGridLayoutManager = new GridLayoutManager(this, 1);
+        GridLayoutManager mGridLayoutManager = new GridLayoutManager(this, 1);
         rvTracks.setLayoutManager(mGridLayoutManager);
         rvTracks.setAdapter(mTrackAdapter);
     }
@@ -78,7 +83,7 @@ public class MainActivity extends AppCompatActivity implements IMainViewListener
                     mMainPresenter.onChangePage(forwardHref);
                 break;
             case R.id.bt_back:
-                if(previousHref != null)
+                if (previousHref != null)
                     mMainPresenter.onChangePage(previousHref);
                 break;
             case R.id.iv_search:
@@ -96,9 +101,30 @@ public class MainActivity extends AppCompatActivity implements IMainViewListener
         Log.d(TAG, "onSearchSuccess: " + pageModel.getTrackModelList());
         this.forwardHref = pageModel.getForwardHref();
         this.previousHref = pageModel.getPreviousHref();
-       mTrackAdapter = new TrackAdapter(this, pageModel.getTrackModelList());
+        mTrackAdapter = new TrackAdapter(this, pageModel.getTrackModelList());
         rvTracks.setAdapter(mTrackAdapter);
-      //  mTrackAdapter.updateTrackList(pageModel.getTrackModelList());
+        //  mTrackAdapter.updateTrackList(pageModel.getTrackModelList());
 
     }
+
+
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        EventBus.getDefault().register(this);
+
+    }
+    @Override
+    public void onStop() {
+        EventBus.getDefault().unregister(this);
+        super.onStop();
+
+    }
+    @Subscribe(threadMode = ThreadMode.MAIN, sticky = true)
+    public void onMessageEvent(TrackSticky trackSticky) {
+
+    };
+
+
 }

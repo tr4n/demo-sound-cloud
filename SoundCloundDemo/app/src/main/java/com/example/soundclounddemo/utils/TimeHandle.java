@@ -35,7 +35,7 @@ public class TimeHandle {
     }
 
     public String getTime() {
-        return (new SimpleDateFormat("EEE, d MMM yyyy \nHH:mm:ss Z"))
+        return (new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss Z"))
                 .format(Calendar.getInstance().getTime())
                 .toUpperCase();
     }
@@ -47,8 +47,14 @@ public class TimeHandle {
 
     public String getDisplayTime(Date createdAt) {
         return DateUtils.isToday(createdAt.getTime())
-                ? (new SimpleDateFormat("HH:mm")).format(createdAt).toUpperCase()
-                : (new SimpleDateFormat("EEE, d MMM yyyy HH:mm")).format(createdAt).toUpperCase();
+                ? "Today, " + (new SimpleDateFormat("HH:mm")).format(createdAt)
+                : (new SimpleDateFormat("HH:mm EEE, dd/MMM/yyyy")).format(createdAt).toUpperCase();
+    }
+    public  String getDisplayTime(long milliSeconds)
+    {
+        // Create a DateFormatter object for displaying date in specified format.
+        Date createAt = new Date(milliSeconds);
+        return getDisplayTime(createAt);
     }
 
 }

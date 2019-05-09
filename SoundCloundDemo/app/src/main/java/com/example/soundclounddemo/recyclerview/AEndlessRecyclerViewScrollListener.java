@@ -15,8 +15,6 @@ public abstract class AEndlessRecyclerViewScrollListener extends RecyclerView.On
     private int previousTotalItemCount = 0;
     // True if we are still waiting for the last set of data to load.
     private boolean loading = true;
-    // Sets the starting page index
-    private int startingPageIndex = 0;
 
     RecyclerView.LayoutManager mLayoutManager;
 
@@ -68,7 +66,9 @@ public abstract class AEndlessRecyclerViewScrollListener extends RecyclerView.On
         // If the total item count is zero and the previous isn't, assume the
         // list is invalidated and should be reset back to initial state
         if (totalItemCount < previousTotalItemCount) {
-            this.currentPage = this.startingPageIndex;
+            // Sets the starting page index
+            int startingPageIndex = 0;
+            this.currentPage = startingPageIndex;
             this.previousTotalItemCount = totalItemCount;
             if (totalItemCount == 0) {
                 this.loading = true;

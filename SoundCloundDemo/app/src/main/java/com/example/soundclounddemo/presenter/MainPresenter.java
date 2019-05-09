@@ -7,13 +7,12 @@ import com.example.soundclounddemo.model.player.PlayerModel;
 import com.example.soundclounddemo.view.IMainViewListener;
 
 public class MainPresenter implements IMainPresenterListener {
-    private Context mContext;
     private IMainViewListener callback;
     private PlayerModel mPlayerModel;
 
 
     public MainPresenter(Context mContext, IMainViewListener callback) {
-        this.mContext = mContext;
+        Context mContext1 = mContext;
         this.callback = callback;
         mPlayerModel = new PlayerModel(mContext, this);
     }

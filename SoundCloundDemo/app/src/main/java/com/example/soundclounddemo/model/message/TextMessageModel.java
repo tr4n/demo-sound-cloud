@@ -10,6 +10,11 @@ public class TextMessageModel extends MessageModel {
         this.content = content;
     }
 
+    public TextMessageModel(String id, int type, int owner, String content) {
+        super(id, type, owner);
+        this.content = content;
+    }
+
     public String getContent() {
         return content;
     }

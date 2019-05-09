@@ -16,7 +16,6 @@ import hybridmediaplayer.HybridMediaPlayer;
 public class TrackStreamService extends Service {
 
     private static final String TAG = "TrackStreamService";
-    private TrackModel mTrackModel;
 
     public TrackStreamService() {
     }
@@ -29,7 +28,7 @@ public class TrackStreamService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        mTrackModel = intent.getParcelableExtra("track");
+        TrackModel mTrackModel = intent.getParcelableExtra("track");
         Log.d(TAG, "onStartCommand: " + mTrackModel);
         playTrack(mTrackModel);
         return super.onStartCommand(intent, flags, startId);

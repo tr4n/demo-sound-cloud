@@ -9,30 +9,37 @@
     <TextView
 
         android:id="@+id/tv_right_text_time"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
 
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="8dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
         android:text="12:33"
+        android:textAlignment="center"
         android:textSize="12sp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/tv_right_content_text_message"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/tv_right_content_text_message"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
         android:layout_marginEnd="8dp"
-        android:layout_marginBottom="8dp"
+        android:layout_marginBottom="@dimen/margin_message"
         android:background="@drawable/right_conner_text_message_background"
         android:elevation="1dp"
-        android:maxWidth="250dp"
-        android:padding="8dp"
+        android:lineHeight="24sp"
+        android:maxWidth="300dp"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="8dp"
         android:text="rightt content abcxlkjsalfkjlskdfjlaskdjfslfsdfkjljkslfjlsdkfjlsdkjflsdkjfs"
         android:textColor="#000"
+        android:textSize="16sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/tv_right_text_time" />
+
 </android.support.constraint.ConstraintLayout>

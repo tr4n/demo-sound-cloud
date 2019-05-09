@@ -14,7 +14,13 @@ public class ImageMessageModel extends MessageModel {
         this.url = url;
     }
 
-    public ImageMessageModel(String id, int owner,  String url) {
+    public ImageMessageModel(String id, int type, int owner, Uri uri, String url) {
+        super(id, type, owner);
+        this.uri = uri;
+        this.url = url;
+    }
+
+    public ImageMessageModel(String id, int owner, String url) {
         super(id, owner);
         super.setType(MessageUtil.IMAGE_MESSAGE);
         this.uri = null;
